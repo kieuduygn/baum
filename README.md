@@ -6,38 +6,34 @@ Baum là một thư viện để thực hiện giải pháp [Nested Set](http://
 
 > Để sử dụng với **Laravel 4.2.x**, xem nhánh [1.0.x](https://github.com/etrepat/baum/tree/1.0.x-stable)  [1.0.x tagged release](https://github.com/etrepat/baum/releases).
 
-## Documentation
+## Tài liệu
 
-* [About Nested Sets](#about)
-* [The theory behind, a TL;DR version](#theory)
-* [Installation](#installation)
-* [Getting started](#getting-started)
-* [Usage](#usage)
-* [Further information](#further-information)
+* [Giới thiệu Nested Set](#about)
+* [Lý thuyết, a TL;DR version](#theory)
+* [Cài đặt](#installation)
+* [Bắt đầu](#getting-started)
+* [Sử dụng](#usage)
+* [Thông tin thêm](#further-information)
 * [Contributing](#contributing)
 
 <a name="about"></a>
-## About Nested Sets
+## Nested Set là gì
 
-A nested set is a smart way to implement an _ordered_ tree that allows for fast,
-non-recursive queries. For example, you can fetch all descendants of a node in a
-single query, no matter how deep the tree. The drawback is that insertions/moves/deletes
-require complex SQL, but that is handled behind the curtains by this package!
+Một Nested Set là một cách thông minh để thực hiện một "cây thứ tự" nhanh nhất, không cần sử dụng đệ quy. Ví dụ bạn có thể lấy ra các con của một node bằng một câu query đơn giản, không cần biết độ sâu (depth) của cây đó là bao nhiêu. Cái khó khăn ở đâu là việc chèn, di chuyển, xóa yêu cầu những câu query cực kỳ phức tạp, tuy nhiên thư viện Baum sẽ giúp chúng ta thực hiện điều đó.
 
-Nested sets are appropriate for ordered trees (e.g. menus, commercial categories)
-and big trees that must be queried efficiently (e.g. threaded posts).
+Nested set thích hợp cho các cây thứ tự (Ví dụ: Menu, danh mục sản phẩm, danh mục bài viết) và những cây có cấu trúc phức tạp cao.
 
-See the [wikipedia entry for nested sets](http://en.wikipedia.org/wiki/Nested_set_model)
-for more info. Also, this is a good introductory tutorial:
+Xem [bài viết trên wikipedia về nested set model](http://en.wikipedia.org/wiki/Nested_set_model)
+hoặc bạn muốn xem thêm thông tin có thể tham khảo bài viết sau:
 [http://www.evanpetersen.com/item/nested-sets.html](http://www.evanpetersen.com/item/nested-sets.html)
 
 <a name="theory"></a>
-## The theory behind, a TL;DR version
+## Lý thuyết, một phiên bản TL;DR
 
-An easy way to visualize how a nested set works is to think of a parent entity surrounding all
-of its children, and its parent surrounding it, etc. So this tree:
+Một cách đơn giản để biểu diễn cách nested set làm việc  là hãy nghĩ đến thực thể cha mẹ được bao quanh bởi tất cả các con của chúng, và cha mẹ chúng lại nằm xung quanh chúng. Hãy xem cây sau đây
 
-    root
+
+    root (gốc)
       |_ Child 1
         |_ Child 1.1
         |_ Child 1.2
@@ -46,7 +42,7 @@ of its children, and its parent surrounding it, etc. So this tree:
         |_ Child 2.2
 
 
-Could be visualized like this:
+Có thể được biểu diễn thế này
 
      ___________________________________________________________________
     |  Root                                                             |
@@ -58,8 +54,7 @@ Could be visualized like this:
     |   |___________________________|   |___________________________|   |
     |___________________________________________________________________|
 
-The numbers represent the left and right boundaries.  The table then might
-look like this:
+Những con số biểu diễn đường biên trái và đường biên phải. Trong database chúng trông như sau:
 
     id | parent_id | lft  | rgt  | depth | data
      1 |           |    1 |   14 |     0 | root
@@ -70,26 +65,26 @@ look like this:
      6 |         5 |    9 |   10 |     2 | Child 2.1
      7 |         5 |   11 |   12 |     2 | Child 2.2
 
-To get all children of a _parent_ node, you
+Để lấy ra các node cha của một node bạn query:
 
 ```sql
 SELECT * WHERE lft IS BETWEEN parent.lft AND parent.rgt
 ```
 
-To get the number of children, it's
+Để lấy ra các con của chúng 
 
 ```sql
 (right - left - 1)/2
 ```
 
-To get a node and all its ancestors going back to the root, you
+Để lấy ra tất cả các node cha, tổ tiên của một node tính từ node root
 
 ```sql
 SELECT * WHERE node.lft IS BETWEEN lft AND rgt
 ```
 
-As you can see, queries that would be recursive and prohibitively slow on
-ordinary trees are suddenly quite fast. Nifty, isn't it?
+Như bạn có thể thấy, các truy vấn đó sẽ được đệ quy và chậm trên
+cây bình thường bỗng nhiên khá nhanh. Điều này đúng chứ ?
 
 <a name="installation"></a>
 ## Installation
